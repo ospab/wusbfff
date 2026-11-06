@@ -38,7 +38,9 @@ Set-ItemProperty -Path $key -Name '(default)' -Value $manifest
 Write-Host "Native host installed: $dest"
 $xpi = Get-ChildItem $root -Filter '*.xpi' -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($xpi) {
-    Write-Host "Next: open $($xpi.FullName) in Firefox (or drag it onto a Firefox window)."
+    # Keep a copy next to the host: the source folder may be temporary (one-line installer).
+    Copy-Item $xpi.FullName (Join-Path $dest 'wusbfff.xpi') -Force
+    Write-Host "Next: open $(Join-Path $dest 'wusbfff.xpi') in Firefox (or drag it onto a Firefox window)."
     Write-Host 'Release Firefox only installs SIGNED add-ons. See README.md ("Keeping it installed").'
 } else {
     Write-Host 'Next: Firefox -> about:debugging#/runtime/this-firefox -> Load Temporary Add-on -> extension\manifest.json'

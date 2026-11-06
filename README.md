@@ -11,6 +11,14 @@ page ──postMessage──> content.js ──> background.js ──WebSocket (
 
 ## Install (Windows)
 
+One line, in PowerShell (installs the native host; then open the printed `wusbfff.xpi` path in Firefox):
+
+```powershell
+irm https://raw.githubusercontent.com/ospab/wusbfff/main/get.ps1 | iex
+```
+
+Or manually:
+
 1. Install Python 3 (with the `py` launcher) and Firefox 140 or newer.
 2. Unzip the release (`wusbfff-<version>-windows.zip`) and run:
    `powershell -ExecutionPolicy Bypass -File install.ps1`
