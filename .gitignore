@@ -1,0 +1,7 @@
+dist/
+host/.venv/
+node_modules/
+__pycache__/
+*.pyc
+host/wusbfff.bat
+host/wusbfff.json

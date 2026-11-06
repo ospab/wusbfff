@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>wusbfff status</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root { color-scheme: light dark; --line: #8884; --ok: #1f9d55; --bad: #d33; --warn: #c80; --accent: #ff6a2b; }
+  * { box-sizing: border-box; }
+  body { font: 15px/1.5 system-ui, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  header img { width: 40px; height: 40px; }
+  h1 { font-size: 22px; margin: 0; }
+  .sub { color: GrayText; margin: 0 0 20px; }
+  .summary { padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 16px; font-weight: 600; }
+  .summary.ok { border-color: var(--ok); color: var(--ok); }
+  .summary.bad { border-color: var(--bad); color: var(--bad); }
+  ul { list-style: none; margin: 0 0 16px; padding: 0; border: 1px solid var(--line); border-radius: 10px; }
+  li { display: grid; grid-template-columns: 24px 1fr; gap: 4px 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  li:last-child { border-bottom: 0; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: GrayText; margin-top: 5px; }
+  .pass .dot { background: var(--ok); } .fail .dot { background: var(--bad); }
+  .skip .dot { background: transparent; border: 2px solid GrayText; } .run .dot { background: var(--warn); }
+  .name { font-weight: 600; }
+  .detail { grid-column: 2; color: GrayText; font-size: 13px; word-break: break-word; }
+  .fail .detail { color: var(--bad); }
+  button { font: inherit; padding: 7px 16px; border-radius: 8px; border: 1px solid var(--line); background: ButtonFace; color: ButtonText; cursor: pointer; margin-right: 8px; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .5; cursor: default; }
+  pre { border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-size: 12px; overflow: auto; margin: 16px 0 0; }
+  footer { margin-top: 24px; color: GrayText; font-size: 13px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <img src="icon.svg" alt="">
+  <h1>wusbfff status</h1>
+</header>
+<p class="sub">Checks the whole chain: page &rarr; extension &rarr; native host (outside the browser) &rarr; libusb.</p>
+
+<div id="summary" class="summary">Running checks&hellip;</div>
+<ul id="checks"></ul>
+<p>
+  <button id="rerun" class="primary">Run again</button>
+  <button id="copy">Copy report</button>
+</p>
+<pre id="report" hidden></pre>
+
+<footer>
+  Nothing is sent anywhere: every check runs locally between this page, the extension and the host on 127.0.0.1.
+  <a href="https://github.com/ospab/wusbfff">Source on GitHub</a>.
+</footer>
+
+<script>
+'use strict';
+const PINGS = 15;
+const list = document.getElementById('checks');
+const summary = document.getElementById('summary');
+const report = document.getElementById('report');
+const rerun = document.getElementById('rerun');
+let lines = [];
+
+function row(name) {
+  const li = document.createElement('li');
+  li.className = 'run';
+  li.innerHTML = '<span class="dot"></span><span class="name"></span><span class="detail"></span>';
+  li.querySelector('.name').textContent = name;
+  list.append(li);
+  return (state, detail) => {
+    li.className = state;
+    li.querySelector('.detail').textContent = detail || '';
+    lines.push(`[${state.toUpperCase()}] ${name}${detail ? ' - ' + detail : ''}`);
+  };
+}
+
+const errText = (e) => `${e && e.name ? e.name + ': ' : ''}${(e && e.message) || e}`;
+
+async function run() {
+  rerun.disabled = true;
+  list.textContent = '';
+  lines = [];
+  summary.className = 'summary';
+  summary.textContent = 'Running checks…';
+  let failed = 0;
+  const fail = (set, detail) => { failed++; set('fail', detail); };
+
+  // 1. Secure context
+  const s1 = row('Secure context (HTTPS or localhost)');
+  if (window.isSecureContext) s1('pass', location.origin);
+  else fail(s1, 'WebUSB is only exposed on secure pages. Open this page over HTTPS or http://localhost.');
+
+  // 2. navigator.usb
+  const s2 = row('navigator.usb is available');
+  const hasUsb = 'usb' in navigator;
+  if (hasUsb) s2('pass');
+  else fail(s2, 'Not found. Install the wusbfff extension and reload this page.');
+
+  // 3. Extension API
+  const s3 = row('wusbfff extension detected');
+  const api = hasUsb && navigator.usb.wusbfff;
+  if (api) s3('pass');
+  else if (hasUsb) fail(s3, 'navigator.usb exists but is not provided by wusbfff (native WebUSB browser?).');
+  else { s3('skip', 'Needs navigator.usb.'); }
+
+  // 4. Native host ping
+  const s4 = row('Native host reachable (outside the browser)');
+  let info = null;
+  if (api) {
+    try {
+      info = await api.ping();
+      s4('pass', `host ${info.hostVersion}, extension ${info.extensionVersion}`);
+    } catch (e) {
+      fail(s4, errText(e) + ' - run install.ps1 so the native host is registered with Firefox.');
+    }
+  } else s4('skip', 'Needs the extension.');
+
+  // 5. Latency
+  const s5 = row(`Round-trip latency (${PINGS} pings)`);
+  if (info) {
+    try {
+      const t = [];
+      for (let i = 0; i < PINGS; i++) t.push((await api.ping()).ms);
+      t.sort((a, b) => a - b);
+      const med = t[Math.floor(t.length / 2)];
+      s5('pass', `min ${t[0]} ms / median ${med} ms / max ${t[t.length - 1]} ms`);
+    } catch (e) { fail(s5, errText(e)); }
+  } else s5('skip', 'Needs the native host.');
+
+  // 6. libusb enumeration
+  const s6 = row('USB enumeration through libusb');
+  if (info) {
+    try {
+      const devs = await navigator.usb.getDevices();
+      s6('pass', `${devs.length} device(s) already granted to this site (none is normal until you pick one with requestDevice)`);
+    } catch (e) { fail(s6, errText(e)); }
+  } else s6('skip', 'Needs the native host.');
+
+  summary.className = 'summary ' + (failed ? 'bad' : 'ok');
+  summary.textContent = failed ? `${failed} check(s) failed` : 'All checks passed. wusbfff is working.';
+  lines.unshift(summary.textContent, `User agent: ${navigator.userAgent}`);
+  rerun.disabled = false;
+}
+
+rerun.addEventListener('click', run);
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = lines.join('\n');
+  report.textContent = text;
+  report.hidden = false;
+  try { await navigator.clipboard.writeText(text); } catch (e) { /* the text is shown for manual copy */ }
+});
+run();
+</script>
+</body>
+</html>

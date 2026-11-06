@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="28" fill="#ff6a2b"/>
+  <!-- fox head: two ears, pointed chin -->
+  <path d="M24 22 L54 46 H74 L104 22 V74 L64 112 L24 74 Z" fill="#fff"/>
+  <!-- USB plug as the snout -->
+  <rect x="46" y="62" width="36" height="26" rx="6" fill="#1b1b1f"/>
+</svg>
