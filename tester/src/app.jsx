@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-only
 const { useState } = React;
 const hex = (n, w = 4) => n.toString(16).padStart(w, '0');
 const bytesHex = (dv) => [...new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength)].map((b) => hex(b, 2)).join(' ');

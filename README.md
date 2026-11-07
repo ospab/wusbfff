@@ -28,6 +28,14 @@ Or manually:
 
 Uninstall: `uninstall.ps1`, then remove the add-on in `about:addons`.
 
+## First run
+
+Installed from addons.mozilla.org, the extension opens a setup page and has a toolbar popup. If the native helper is
+missing, they offer the one-line install command, a double-click `install-wusbfff.cmd`, or a link to this repo.
+(A browser extension cannot run programs, so the user runs the installer.) The installer sets up Python through winget
+if needed, installs the helper, and checks that a WinUSB driver is present (it prints the official Meta/Google driver
+links if not).
+
 ## Keeping it installed permanently
 
 Release and Beta Firefox only install **signed** add-ons, and temporary add-ons from `about:debugging`
@@ -93,3 +101,7 @@ Sources are in `tester/src/app.jsx`; rebuild with `node tester/build.js`.
 - Speed: native messaging is only used to start the host. Data travels as binary frames over a WebSocket
   on 127.0.0.1 (no base64, no 1 MB cap). The port is protected by a random token and an
   `Origin: moz-extension://` check. One read can return up to 4 MB.
+
+## License
+
+GNU Affero General Public License v3 (`AGPL-3.0-only`), see [LICENSE](LICENSE). The tester bundle includes React (MIT).

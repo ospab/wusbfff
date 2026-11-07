@@ -17,14 +17,19 @@ Code and package
 - [ ] Manual test in Firefox with the packaged xpi: status page (`docs/index.html`) all green
 - [ ] Manual test with real hardware (Quest + a WebUSB/ADB site)
 
-Decisions to make **before the first upload** (cannot be changed afterwards without breaking installs)
-- [ ] **Add-on ID.** Currently `wusbfff@local`. Choose the permanent one (e.g. `wusbfff@<your-domain-or-handle>`), then change it in
-      `extension/manifest.json` **and** in `install.ps1` (`allowed_extensions`). The ID is permanent once published.
-- [ ] **License.** The repo has none yet. Pick one (MIT is the usual choice), add `LICENSE`, and select the same license in the AMO listing.
-- [ ] **Support URL / email** for the listing (GitHub Issues URL is fine).
+Decisions (the add-on ID can never change after the first upload)
+- [x] **Add-on ID:** `wusbfff@wusbfff.ospab.org` (set in `extension/manifest.json` and in `install.ps1` → `allowed_extensions`; keep both in sync)
+- [x] **License:** GNU AGPL v3 (`LICENSE`, SPDX `AGPL-3.0-only` headers in the sources). In the AMO listing pick the AGPL v3 entry; if the
+      preset list does not offer it, choose *Custom License* and link to `https://github.com/ospab/wusbfff/blob/main/LICENSE`.
+- [x] **Support URL:** GitHub Issues (`https://github.com/ospab/wusbfff/issues`)
+- [x] **First-run UX:** the toolbar popup (also opened in a tab right after installing from AMO) checks the native helper and, if it is
+      missing, offers: copy the one-line install command, download `install-wusbfff.cmd`, open GitHub. The extension never runs
+      anything itself (browsers cannot execute programs); the user runs the installer.
+- [x] **Installer** (`get.ps1` → `install.ps1`): installs Python via winget on request (per user, no admin), the host, and checks for a WinUSB driver.
+      It does **not** download or install a USB driver: Meta's ADB driver is not redistributable from a stable direct URL; it prints the official links instead.
 
 Known issues to be aware of (disclose in the listing, they are real)
-- Quest headsets: libusb on Windows opens *every* interface of a composite device. If another program holds one
+- Quest headsets (open issue, fix not yet implemented): libusb on Windows opens *every* interface of a composite device. If another program holds one
   (Meta's `OVRService`, a running ADB server) the open fails with `SecurityError: Access denied`. Planned fix: talk to the
   single needed interface directly through WinUSB. Until then, stop `OVRService` / run `adb kill-server`.
 - No `connect` / `disconnect` events, no isochronous transfers.
@@ -88,9 +93,12 @@ Privacy and safety
 - No analytics, no telemetry, no remote code, no data collection.
 
 Setup (Windows)
-1. Install Python 3 and this extension.
-2. Download the host installer zip from the GitHub releases page and run install.ps1 (no administrator rights needed).
-3. Open the status page to verify the whole chain: https://ospab.github.io/wusbfff/
+1. Install this extension. A setup page opens; if the helper is missing it shows the one-line install command
+   (PowerShell: irm https://raw.githubusercontent.com/ospab/wusbfff/main/get.ps1 | iex) or a .cmd file to double-click.
+   The installer needs no administrator rights and offers to install Python 3 through winget if it is missing.
+2. Click "Check again" in the extension popup, or open the status page to verify the whole chain: https://ospab.github.io/wusbfff/
+
+The extension is licensed under the GNU AGPL v3.
 
 Supported: requestDevice with filters, getDevices, forget, open/close, configurations, interfaces, bulk/interrupt/control
 transfers, clearHalt, reset. Not supported: connect/disconnect events, isochronous transfers.
@@ -102,7 +110,7 @@ Source code and issue tracker: https://github.com/ospab/wusbfff
 **Tags:** webusb, usb, adb, quest, developer
 **Support site:** `https://github.com/ospab/wusbfff/issues`
 **Homepage:** `https://github.com/ospab/wusbfff`
-**License:** the one chosen in section 1
+**License:** GNU Affero General Public License v3 (see section 1)
 **Privacy policy** (paste into the listing's privacy policy field):
 ```
 wusbfff does not collect, store, transmit or share any personal data or usage data. The extension only stores, locally in
@@ -133,7 +141,11 @@ Architecture
   then a binary WebSocket to ws://127.0.0.1:<port> carries the data. The host rejects any WebSocket whose Origin is not
   moz-extension:// or whose first message lacks the token.
 - The host (host/host.py, Python + pyusb + libusb, source in the repo) is NOT downloaded or executed by the extension.
-  The user installs it manually from the GitHub release.
+  The user installs it manually.
+- popup.html/popup.js: browser-action popup (also opened in a tab on first install). It pings the host through background.js.
+  If the host is missing it shows setup instructions: a button copying the one-line PowerShell command to the clipboard, and a link
+  to a .cmd file generated locally from a Blob (data: nothing is fetched) that the user may download and double-click.
+  The extension itself never downloads, writes or executes any file or code.
 
 Permissions
 - nativeMessaging: start/communicate with the user-installed host.

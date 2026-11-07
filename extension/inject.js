@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-only
 // wusbfff: runs in the page's own JS world and provides navigator.usb.
 // All real work is delegated to content.js via window.postMessage.
 (() => {

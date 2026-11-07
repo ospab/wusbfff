@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>wusbfff</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icon.svg" alt="">
+    <h1>wusbfff</h1>
+  </header>
+
+  <section data-view="checking">
+    <p class="muted">Checking the native helper&hellip;</p>
+  </section>
+
+  <section data-view="ok" hidden>
+    <p class="status good">Everything is set up</p>
+    <p class="muted" id="ver"></p>
+    <p>WebUSB is available on secure sites. Sites ask you to pick a device in this extension's own dialog.</p>
+    <div class="row">
+      <button id="open-status" class="primary">Open status page</button>
+      <button id="open-gh-ok">GitHub</button>
+    </div>
+  </section>
+
+  <section data-view="missing" hidden>
+    <p class="status bad">Native helper not found</p>
+    <p>Firefox cannot access USB devices by itself, so wusbfff needs a small helper program on this computer
+       (Windows). One command installs everything: the helper, Python if it is missing, and a driver check.</p>
+    <ol>
+      <li><button id="copy" class="primary">Copy install command</button></li>
+      <li>Paste it into PowerShell (<kbd>Win</kbd>+<kbd>X</kbd> &rarr; Terminal) and press <kbd>Enter</kbd>.</li>
+      <li>Come back here and press <b>Check again</b>.</li>
+    </ol>
+    <div class="row">
+      <a id="dl" class="btn" download="install-wusbfff.cmd">Download installer (.cmd)</a>
+      <button id="open-gh">Open GitHub</button>
+      <button id="recheck">Check again</button>
+    </div>
+    <details>
+      <summary>Technical details</summary>
+      <p class="muted" id="why"></p>
+    </details>
+  </section>
+
+  <script src="popup.js"></script>
+</body>
+</html>

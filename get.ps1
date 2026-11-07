@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 # One-line installer (Windows PowerShell or PowerShell 7):
 #   irm https://raw.githubusercontent.com/ospab/wusbfff/main/get.ps1 | iex
 # Downloads the latest release (or the main branch if there is no release yet), installs the native host

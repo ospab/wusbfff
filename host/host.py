@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: AGPL-3.0-only
 """Native host for the wusbfff (WebUSB for Firefox) extension.
 
 Control channel: Firefox native messaging (stdin/stdout, 4-byte length + JSON).

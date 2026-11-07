@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 # Builds dist\wusbfff-<version>.xpi and dist\wusbfff-<version>-windows.zip (xpi + host + installer + tester).
 #   .\package.ps1          unsigned build
 #   .\package.ps1 -Sign    also signs the xpi on addons.mozilla.org (unlisted, free);
@@ -51,6 +52,8 @@ $bundle = [ordered]@{
     'host/requirements.txt' = Join-Path $root 'host\requirements.txt'
     'install.ps1'           = Join-Path $root 'install.ps1'
     'uninstall.ps1'         = Join-Path $root 'uninstall.ps1'
+    'install.cmd'           = Join-Path $root 'install.cmd'
+    'LICENSE'               = Join-Path $root 'LICENSE'
     'README.md'             = Join-Path $root 'README.md'
     'tester/index.html'     = Join-Path $root 'tester\index.html'
 }

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 Remove-Item -Path 'HKCU:\Software\Mozilla\NativeMessagingHosts\wusbfff' -ErrorAction SilentlyContinue
 $dest = Join-Path $env:LOCALAPPDATA 'wusbfff'
 if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }

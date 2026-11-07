@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-only
 // wusbfff: isolated-world bridge between the page (inject.js) and background.js.
 // Also owns the device chooser, which the page can neither see nor script.
 'use strict';

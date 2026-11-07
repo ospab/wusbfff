@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-only
 'use strict';
 
 const HOST = 'wusbfff';
@@ -159,3 +160,8 @@ async function handle(msg, sender) {
 }
 
 browser.runtime.onMessage.addListener((msg, sender) => handle(msg, sender));
+
+// First run: show the setup page (same UI as the toolbar popup) so the user can install the native helper.
+browser.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === 'install') browser.tabs.create({ url: browser.runtime.getURL('popup.html?welcome=1') });
+});

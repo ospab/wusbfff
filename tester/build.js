@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-only
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 const t = path.join(__dirname);
 const out = execFileSync('npx', ['--yes', 'esbuild', path.join(t, 'src/app.jsx'), '--jsx=transform', '--minify', '--target=firefox115'], { shell: true, encoding: 'utf8', maxBuffer: 1 << 26 });
